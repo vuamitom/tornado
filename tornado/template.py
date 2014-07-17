@@ -521,8 +521,8 @@ class _ControlBlock(_Node):
         return (self.body,)
 
     def generate(self, writer):
-        _write_statement(self.statement , writer, self.line)
-        #writer.write_line("%s:" % self.statement, self.line)
+        #_write_statement(self.statement , writer, self.line)
+        writer.write_line("%s:" % self.statement, self.line)
         with writer.indent():
             self.body.generate(writer)
             # Just in case the body was empty
@@ -885,34 +885,34 @@ def _parse(reader, template, in_block=None, in_loop=None):
 
 ################## KV customization #############################
 
-kv_exp = re.compile(r"^(products|menus|categories)(\(.*\))?")
-kv_funcs = {
-    "products":"handler.get_products",
-    "menus" :"handler.get_menus",
-    "categories" : "handler.get_categories"
-}
-
-def _write_statement(statement, writer, line):
-    """
-
-    :param statement: a python statement that may contains non-blocking gen.coroutine
-    :param writer: writer cursor
-    :param line: writer line
-    :return: a sync or not
-    """
-    operator, space , suffix = statement.partition(" ")
-    if operator in ("for", "if"):
-        tokens = suffix.split()
-
-        for idx, token in enumerate(tokens):
-            matches = kv_exp.match(token)
-            if matches:
-                func = matches.group(1)
-                args = matches.group(2) if matches.group(2) else "()"
-                writer.write_line("_tt_%s = yield %s%s" % (func, kv_funcs[func], args), line)
-                statement = statement.replace(matches.group(0), "_tt_%s" % func)
-
-                break
-        writer.write_line("%s:" % statement, line)
-    else:
-        raise ParseError("operator: %r should not contains co-routine" % operator)
+# kv_exp = re.compile(r"^(products|menus|categories)(\(.*\))?")
+# kv_funcs = {
+#     "products":"handler.get_products",
+#     "menus" :"handler.get_menus",
+#     "categories" : "handler.get_categories",
+# }
+#
+# def _write_statement(statement, writer, line):
+#     """
+#
+#     :param statement: a python statement that may contains non-blocking gen.coroutine
+#     :param writer: writer cursor
+#     :param line: writer line
+#     :return: a sync or not
+#     """
+#     operator, space , suffix = statement.partition(" ")
+#     if operator in ("for", "if"):
+#         tokens = suffix.split()
+#
+#         for idx, token in enumerate(tokens):
+#             matches = kv_exp.match(token)
+#             if matches:
+#                 func = matches.group(1)
+#                 args = matches.group(2) if matches.group(2) else "()"
+#                 writer.write_line("_tt_%s = yield %s%s" % (func, kv_funcs[func], args), line)
+#                 statement = statement.replace(matches.group(0), "_tt_%s" % func)
+#
+#                 break
+#         writer.write_line("%s:" % statement, line)
+#     else:
+#         raise ParseError("operator: %r should not contains co-routine" % operator)
